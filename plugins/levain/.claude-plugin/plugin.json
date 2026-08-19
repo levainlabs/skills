@@ -1,0 +1,11 @@
+{
+  "name": "levain",
+  "displayName": "Levain",
+  "version": "0.1.0",
+  "description": "Author Levain agents from Claude Code: fork a draft, edit the recipe, validate, verify, and publish.",
+  "author": { "name": "Levain" },
+  "homepage": "https://docs.levainlabs.com",
+  "repository": "https://github.com/levainlabs/skills",
+  "license": "Apache-2.0",
+  "keywords": ["levain", "agents", "recipes"]
+}
