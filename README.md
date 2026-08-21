@@ -28,13 +28,21 @@ it works on claude.ai and through the API as well as in Claude Code.
 
 ## Configure
 
+Two sign-ins, both OAuth, no API key:
+
+1. Connect the **Levain MCP server** in your client.
+2. Install the CLI and sign in:
+
 ```bash
-export LEVAIN_API_KEY=levain_...              # workspace-scoped, from the dashboard
-export LEVAIN_API=https://api.levainlabs.com  # only if self-hosted
+uv tool install levain-cli
+levain login
 ```
 
-Use a **workspace-scoped** key: org-scoped keys work for the API but
-not for git, which has no way to carry the workspace selector.
+`levain login` opens a device-code flow — visit the URL it prints,
+enter the code, done. After that the CLI acts as git's credential
+helper and mints short-lived, repo-scoped credentials on demand, so
+no secret is stored in `.git/config`, kept in your environment, or
+shown to the agent.
 
 ## How it's put together
 
@@ -57,9 +65,8 @@ re-validates every push and gates publishing on its own review.
 
 ## Contributing
 
-This repository is generated from the Levain monorepo; edits here are
-overwritten. Open an issue instead, or reach us at
-[levainlabs.com](https://levainlabs.com).
+This repository is generated, so edits here are overwritten. Open an
+issue instead, or reach us at [levainlabs.com](https://levainlabs.com).
 
 ## License
 
