@@ -72,6 +72,11 @@ working and no secret is ever written to disk or shown to you.
 Do **not** put a credential in the remote URL — git would persist it
 in `.git/config` and echo it back from `git remote -v`.
 
+If the environment has no git identity (fresh containers often
+don't), set one on the clone before committing:
+`git config user.name <name>` and `git config user.email <email>`,
+with the user's details.
+
 ### Step 4: Edit
 
 Read `references/authoring.md` before your first change to this
@@ -93,8 +98,10 @@ the live catalog for what is actually available and at what price
 uvx --from "${LEVAIN_CLI_FROM:-levain-cli}" levain validate-package .
 ```
 
-This validates the spec, model-checks the graph, and regenerates
-`_state.py`. Read its errors literally — they are the format's
+This validates the spec, model-checks the graph, and fails if
+`_state.py` is missing or stale — regenerate it with
+`levain generate-state .` after any change to the graph's state and
+commit the result. Read its errors literally — they are the format's
 documentation. Expected output on success: `VALIDATION PASSED` plus a
 node and transition summary.
 
@@ -107,24 +114,33 @@ platform runs the full pipeline server-side regardless.
 git push origin <branch>
 ```
 
-### Step 7: Verify
+### Step 7: Server checks — free
 
-`verify_version`. It returns immediately; poll the run until it
-finishes.
+`run_checks`. The platform lints the pushed tree exactly as
+verification's first stage does (recipe validation, ruff, mypy) with
+no reviewer and no cost, and never edits the branch. It returns
+immediately; poll `get_session` with the returned `session_id` — the
+round's `build_outcome` carries `checks_passed`, and
+`failure_excerpt` holds the lint output when it fails.
+
+Fix, push, and re-run until it passes. Only then is the paid
+verification worth dispatching.
+
+### Step 8: Verify
+
+`verify_version`. It returns immediately; poll `get_session` until
+the round finishes — its `build_outcome` is the verdict.
 
 Before calling it, walk `references/review-checklist.md` — each issue
 you catch is a verification round you don't pay for.
 
-Then read the feedback with `get_version_review_threads`. Fix what
-is valid, push, verify again.
-Marking a thread resolved does not resolve it — the next pass
+The pass is report-only: the reviewer records its verdict and
+comments and never edits your branch. Read the feedback with
+`get_version_review_threads`. Fix what is valid, push, and verify
+again. Marking a thread resolved does not resolve it — the next pass
 re-judges the code either way.
 
-Note that verification may itself commit to the branch (it
-regenerates `_state.py`, and its review loop can apply fixes). Pull
-before you continue editing.
-
-### Step 8: Publish
+### Step 9: Publish
 
 `publish_version`, or pass `publish: true` to `verify_version` to
 publish automatically on a green verdict.
