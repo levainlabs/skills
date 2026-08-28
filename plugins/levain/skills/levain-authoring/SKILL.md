@@ -114,22 +114,15 @@ platform runs the full pipeline server-side regardless.
 git push origin <branch>
 ```
 
-### Step 7: Server checks — free
-
-`run_checks`. The platform lints the pushed tree exactly as
-verification's first stage does (recipe validation, ruff, mypy) with
-no reviewer and no cost, and never edits the branch. It returns
-immediately; poll `get_session` with the returned `session_id` — the
-round's `build_outcome` carries `checks_passed`, and
-`failure_excerpt` holds the lint output when it fails.
-
-Fix, push, and re-run until it passes. Only then is the paid
-verification worth dispatching.
-
-### Step 8: Verify
+### Step 7: Verify
 
 `verify_version`. It returns immediately; poll `get_session` until
 the round finishes — its `build_outcome` is the verdict.
+
+The deterministic checks run first and gate the reviewer: a checks
+failure ends the pass before any review cost, with the lint output
+in `build_outcome.failure_excerpt`. So the worst case for skipping
+Step 5 is a cheap bounce — but local validation is still faster.
 
 Before calling it, walk `references/review-checklist.md` — each issue
 you catch is a verification round you don't pay for.
@@ -140,7 +133,7 @@ comments and never edits your branch. Read the feedback with
 again. Marking a thread resolved does not resolve it — the next pass
 re-judges the code either way.
 
-### Step 9: Publish
+### Step 8: Publish
 
 `publish_version`, or pass `publish: true` to `verify_version` to
 publish automatically on a green verdict.
