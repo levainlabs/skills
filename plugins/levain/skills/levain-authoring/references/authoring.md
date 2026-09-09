@@ -62,6 +62,32 @@ Keep I/O inside the node that owns it. Orchestration, retries, and
 scheduling belong to the platform — a node that implements its own
 retry loop is fighting the harness.
 
+### Reading the wiki from a node
+
+Agent-engine nodes get the workspace wiki as the `levain-wiki` MCP
+server (`search_wiki`, `read_wiki_page`, `list_wiki_pages`). A node
+that needs one known page reads it directly, with no agent loop:
+
+```python
+from levain_sdk.models import call_chat
+from levain_sdk.wiki import read_page
+
+page = await read_page("VOICE.md")
+if page.get("code") == "unreachable":
+    raise RuntimeError(page["error"])
+voice = page.get("body", DEFAULT_VOICE)
+text = await call_chat(system=voice, messages=history, model=model)
+```
+
+`read_page(path)` returns `{"path", "body"}`; `search(query, limit=20)`
+returns `{"hits": [{"path", "title", "snippet", "score"}]}`;
+`list_pages()` returns `{"pages": [{"path"}], "count"}`. Configuration
+comes from the sandbox environment. Failures are dicts, never
+exceptions: `error` is prose for an agent, `code` is stable —
+`no_wiki`, `missing_credentials` and `unreachable` from any of the
+three; `invalid_path`, `not_found` and `too_large` from `read_page`.
+`call_chat` needs the `models` extra (`levain-sdk[models]`).
+
 ## SPEC.md is the intent channel
 
 The platform's reviewer is deliberately independent: it sees the
