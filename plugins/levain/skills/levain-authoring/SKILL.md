@@ -11,8 +11,12 @@ metadata:
 
 # Authoring Levain agents
 
-A Levain agent is a **recipe**: a `graph.tla` spec declaring the node
-graph and state, plus a Python package with one function per node.
+A Levain agent is a **recipe**, one of two kinds. A graph recipe is a
+`graph.tla` spec declaring the node graph and state, plus a Python
+package with one function per node. A harness recipe is one engine
+session (Claude Code or Hermes) declared under `[tool.levain.harness]`
+in `pyproject.toml`, with a system prompt and no graph; pick it when
+the agent is one conversation with tools and no fixed multi-step flow.
 Versions are the unit of change — `draft` versions are editable,
 `active` and `archived` ones are immutable.
 
@@ -98,10 +102,12 @@ the live catalog for what is actually available and at what price
 uvx --from "${LEVAIN_CLI_FROM:-levain-cli}" levain validate-package .
 ```
 
-This validates the spec, model-checks the graph, and fails if
+For a graph this validates the spec, model-checks it, and fails if
 `_state.py` is missing or stale — regenerate it with
 `levain generate-state .` after any change to the graph's state and
-commit the result. Read its errors literally — they are the format's
+commit the result. For a harness it checks the `[tool.levain.harness]`
+settings, the prompt file and the MCP server names; there is no
+`_state.py`. Read its errors literally — they are the format's
 documentation. Expected output on success: `VALIDATION PASSED` plus a
 node and transition summary.
 
@@ -180,7 +186,8 @@ verification is already in flight for that agent. Wait for it, then
 retry.
 
 **Validation fails on `_state.py`** — it is generated, never
-hand-edited. Run `levain generate-state .` and commit the result.
+hand-edited. Run `levain generate-state .` and commit the result
+(graph recipes only; a harness has none).
 
 **Publish rejected on a green-looking draft** — publishing needs a
 recorded verdict from a verification pass on the *current* commit,
