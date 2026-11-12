@@ -106,8 +106,10 @@ For a graph this validates the spec, model-checks it, and fails if
 `_state.py` is missing or stale — regenerate it with
 `levain generate-state .` after any change to the graph's state and
 commit the result. For a harness it checks the `[tool.levain.harness]`
-settings, the prompt file and the MCP server names; there is no
-`_state.py`. Read its errors literally — they are the format's
+settings, the prompt file, the `skills`, `instructions` and `settings`
+it ships (laid down in the workspace as `.claude/skills/`, `CLAUDE.md`
+and `.claude/settings.json` every turn) and the MCP server names; there
+is no `_state.py`. Read its errors literally — they are the format's
 documentation. Expected output on success: `VALIDATION PASSED` plus a
 node and transition summary.
 
